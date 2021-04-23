@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button class="connectButton" onclick="connectToHiFiAudio()">Click to Connect</button>
+    <audio class="outputAudioEl" controls autoplay></audio>
+</body>
+
+<script src="https://hifi-spatial-audio-api.s3.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script>
+<script>
+    let connectButton = document.querySelector('.connectButton');
+
+    async function connectToHiFiAudio() {
+        connectButton.disabled = true;
+        connectButton.innerHTML = 'Connecting..';
+
+        let audioInputStream;
+        try {
+            audioInputStream = await navigator.mediaDevices.getUserMedia( { audio: HighFidelityAudio.getBestAudioConstraints(), video: False } )
+        } catch (error) {
+            return;
+        }
+        
+        let hifiCommunicator = new HighFidelityAudio.HiFiCommunicator()
+        await hifiCommunicator.setInputAudioMediaStream(audioInputStream);
+
+        let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBfaWQiOiJlMGIyYmI1OS1hMDE3LTQzN2UtYTQzNC1mNDAyNzY3ZTQ1YTUiLCJzcGFjZV9pZCI6ImZhNTBiOTIxLTdlMGYtNDVjMC1iMzkzLWIyMzk5NDE1OTJiNyIsInN0YWNrIjoiYXVkaW9uZXQtbWl4ZXItYXBpLWhvYmJ5LTA1In0.JkQZnj5IOHMGRB2mxSGsanLVXg39k6N2TZde0Mumzq4";
+        await hifiCommunicator.connectToHiFiAudioAPIServer(jwt);
+
+        connectButton.innerHTML = 'Connected :)';
+
+        document.querySelector('.outputAudioEl').srcObject = hifiCommunicator.getOutputAudioMediaStream();
+        document.querySelector('.outputAudioEl').play();
+    }
+</script>
+</html>
